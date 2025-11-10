@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Heart Disease Risk Prediction</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Animated gradient background */
+    body {
+      background: linear-gradient(-45deg, #6EE7B7, #3B82F6, #9333EA, #FDE68A);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
+
+  <div class="bg-white/30 backdrop-blur-xl shadow-2xl rounded-3xl p-12 max-w-3xl w-full text-left border border-white/20 relative">
+
+      <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-8 text-center">
+          ❤️ Heart Attack Risk Prediction
+      </h1>
+
+      <form action="{{ url_for('predict_datapoint') }}" method="post" class="grid grid-cols-2 gap-6 md:gap-4">
+
+          <!-- Numeric Inputs -->
+          <div class="flex flex-col relative">
+              <label for="age" class="text-gray-900 font-medium mb-2">Age</label>
+              <input type="number" step="any" name="age" id="age" placeholder="Enter your age" 
+                     class="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 w-full">
+          </div>
+
+          <div class="flex flex-col relative">
+              <label for="thalach" class="text-gray-900 font-medium mb-2">Max Heart Rate</label>
+              <input type="number" step="any" name="thalach" id="thalach" placeholder="e.g., 150" 
+                     class="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 w-full">
+          </div>
+
+          <div class="flex flex-col relative">
+              <label for="trtbps_winsorize" class="text-gray-900 font-medium mb-2">Resting Blood Pressure</label>
+              <input type="number" step="any" name="trtbps_winsorize" id="trtbps_winsorize" placeholder="e.g., 120" 
+                     class="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 w-full">
+          </div>
+
+          <div class="flex flex-col relative">
+              <label for="oldpeak_winsorize_sqrt" class="text-gray-900 font-medium mb-2">ST Depression</label>
+              <input type="number" step="any" name="oldpeak_winsorize_sqrt" id="oldpeak_winsorize_sqrt" placeholder="e.g., 1.2" 
+                     class="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 w-full">
+          </div>
+
+          <!-- Dropdowns (categorical inputs) -->
+          <div class="flex flex-col relative">
+              <label for="sex" class="text-gray-900 font-medium mb-2">Gender</label>
+              <div class="relative z-10">
+                <select name="sex" id="sex" class="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 w-full max-h-52 overflow-y-auto">
+                    {% for text, value in sex_options %}
+                    <option value="{{ value }}">{{ text }}</option>
+                    {% endfor %}
+                </select>
+              </div>
+          </div>
+
+          <div class="flex flex-col relative">
+              <label for="cp" class="text-gray-900 font-medium mb-2">Chest Pain Type</label>
+              <div class="relative z-10">
+                <select name="cp" id="cp" class="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 w-full max-h-52 overflow-y-auto">
+                    {% for text, value in cp_options %}
+                    <option value="{{ value }}">{{ text }}</option>
+                    {% endfor %}
+                </select>
+              </div>
+          </div>
+
+          <div class="flex flex-col relative">
+              <label for="exang" class="text-gray-900 font-medium mb-2">Exercise Induced Angina</label>
+              <div class="relative z-10">
+                <select name="exang" id="exang" class="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 w-full max-h-52 overflow-y-auto">
+                    {% for text, value in exang_options %}
+                    <option value="{{ value }}">{{ text }}</option>
+                    {% endfor %}
+                </select>
+              </div>
+          </div>
+
+          <div class="flex flex-col relative">
+              <label for="slope" class="text-gray-900 font-medium mb-2">Heart Response (ST Slope)</label>
+              <div class="relative z-10">
+                <select name="slope" id="slope" class="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 w-full max-h-52 overflow-y-auto">
+                    {% for text, value in slope_options %}
+                    <option value="{{ value }}">{{ text }}</option>
+                    {% endfor %}
+                </select>
+              </div>
+          </div>
+
+          <div class="flex flex-col relative">
+              <label for="ca" class="text-gray-900 font-medium mb-2">Major Blocked Vessels</label>
+              <div class="relative z-10">
+                <select name="ca" id="ca" class="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 w-full max-h-52 overflow-y-auto">
+                    {% for text, value in ca_options %}
+                    <option value="{{ value }}">{{ text }}</option>
+                    {% endfor %}
+                </select>
+              </div>
+          </div>
+
+          <div class="flex flex-col relative">
+              <label for="thal" class="text-gray-900 font-medium mb-2">Thalassemia Test</label>
+              <div class="relative z-10">
+                <select name="thal" id="thal" class="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 w-full max-h-52 overflow-y-auto">
+                    {% for text, value in thal_options %}
+                    <option value="{{ value }}">{{ text }}</option>
+                    {% endfor %}
+                </select>
+              </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="col-span-2">
+              <button type="submit" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition duration-300">
+                  Predict
+              </button>
+          </div>
+      </form>
+
+      {% if result is not none %}
+      <h2 class="mt-8 text-center text-xl md:text-2xl font-semibold text-white bg-gradient-to-r from-red-400 to-yellow-400 rounded-xl p-4 shadow-md">
+          {{ result }}
+      </h2>
+      {% endif %}
+  </div>
+
+</body>
+</html>
